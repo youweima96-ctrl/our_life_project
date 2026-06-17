@@ -318,8 +318,55 @@ label {
 }
 
 .report {
-  white-space: pre-wrap;
   line-height: 1.7;
+}
+
+.report h1,
+.report h2,
+.report h3 {
+  margin: 0;
+  color: #172033;
+  line-height: 1.25;
+}
+
+.report h1 {
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
+.report h2 {
+  margin-top: 26px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 20px;
+}
+
+.report h3 {
+  margin-top: 18px;
+  margin-bottom: 8px;
+  font-size: 17px;
+}
+
+.report p {
+  margin: 10px 0;
+  color: #344054;
+}
+
+.report ol,
+.report ul {
+  margin: 10px 0 0;
+  padding-left: 24px;
+}
+
+.report li {
+  margin: 10px 0;
+  color: #344054;
+}
+
+.report strong {
+  color: #101828;
+  font-weight: 760;
 }
 
 .toast {

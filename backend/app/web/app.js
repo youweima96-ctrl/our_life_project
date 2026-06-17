@@ -231,7 +231,7 @@ async function generateReport() {
       method: "POST",
       body: JSON.stringify({ user_id: USER_ID })
     });
-    $("#reportPanel").textContent = report.content_markdown;
+    $("#reportPanel").innerHTML = renderMarkdown(report.content_markdown);
     toast("周报已生成");
   } catch (error) {
     toast(error.message);
@@ -297,6 +297,82 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function renderMarkdown(markdown) {
+  const lines = String(markdown || "").replaceAll("\r\n", "\n").split("\n");
+  const blocks = [];
+  let paragraph = [];
+  let orderedItems = [];
+  let unorderedItems = [];
+
+  function flushParagraph() {
+    if (!paragraph.length) return;
+    blocks.push(`<p>${renderInline(paragraph.join(" "))}</p>`);
+    paragraph = [];
+  }
+
+  function flushOrdered() {
+    if (!orderedItems.length) return;
+    blocks.push(`<ol>${orderedItems.map((item) => `<li>${renderInline(item)}</li>`).join("")}</ol>`);
+    orderedItems = [];
+  }
+
+  function flushUnordered() {
+    if (!unorderedItems.length) return;
+    blocks.push(`<ul>${unorderedItems.map((item) => `<li>${renderInline(item)}</li>`).join("")}</ul>`);
+    unorderedItems = [];
+  }
+
+  function flushLists() {
+    flushOrdered();
+    flushUnordered();
+  }
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) {
+      flushParagraph();
+      flushLists();
+      continue;
+    }
+
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      flushLists();
+      const level = heading[1].length;
+      blocks.push(`<h${level}>${renderInline(heading[2])}</h${level}>`);
+      continue;
+    }
+
+    const ordered = line.match(/^\d+\.\s+(.+)$/);
+    if (ordered) {
+      flushParagraph();
+      flushUnordered();
+      orderedItems.push(ordered[1]);
+      continue;
+    }
+
+    const unordered = line.match(/^[-*]\s+(.+)$/);
+    if (unordered) {
+      flushParagraph();
+      flushOrdered();
+      unorderedItems.push(unordered[1]);
+      continue;
+    }
+
+    paragraph.push(line);
+  }
+
+  flushParagraph();
+  flushLists();
+
+  return blocks.length ? blocks.join("") : "<p>暂无周报</p>";
+}
+
+function renderInline(value) {
+  return escapeHtml(value).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }
 
 function bindEvents() {

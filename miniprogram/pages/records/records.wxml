@@ -1,0 +1,12 @@
+<view class="page">
+  <view class="title">时间线</view>
+  <block wx:for="{{events}}" wx:key="id">
+    <view class="event-card">
+      <view class="event-title">{{item.title}}</view>
+      <view class="event-summary">{{item.summary}}</view>
+      <view class="meta">{{item.event_type}} · {{item.visibility}}</view>
+    </view>
+  </block>
+  <view wx:if="{{events.length === 0}}" class="panel subtitle">暂无已确认记录</view>
+</view>
+

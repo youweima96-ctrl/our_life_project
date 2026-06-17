@@ -1,0 +1,35 @@
+<view class="page">
+  <view class="section panel">
+    <view class="title">AI 已帮你整理</view>
+    <input class="input" value="{{form.title}}" data-field="title" bindinput="onFieldInput" />
+    <textarea class="input" value="{{form.summary}}" data-field="summary" bindinput="onFieldInput" />
+    <view class="meta">类型：{{form.event_type}}</view>
+    <view class="meta">建议权限：{{form.visibility}}</view>
+  </view>
+
+  <view class="section">
+    <view class="subtitle">标签</view>
+    <view class="chip-row">
+      <block wx:for="{{form.topic_tags}}" wx:key="*this">
+        <view class="chip">{{item}}</view>
+      </block>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="subtitle">复盘问题</view>
+    <block wx:for="{{questions}}" wx:key="*this">
+      <view class="event-card">
+        <view class="event-summary">{{item}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="section">
+    <button class="button button-primary" loading="{{loading}}" bindtap="confirm">确认保存</button>
+  </view>
+  <view class="section">
+    <button class="button button-secondary" bindtap="goBack">返回修改原文</button>
+  </view>
+</view>
+

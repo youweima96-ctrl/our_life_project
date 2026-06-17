@@ -1,0 +1,6 @@
+<view class="page">
+  <view class="title">冲突复盘</view>
+  <view class="subtitle">从事实、情绪、需求和下次约定开始。</view>
+  <textarea class="input" value="{{userView}}" bindinput="onInput" placeholder="补充你的视角" />
+</view>
+

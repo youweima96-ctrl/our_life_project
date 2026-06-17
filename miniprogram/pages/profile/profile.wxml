@@ -1,0 +1,17 @@
+<view class="page">
+  <view class="title">我的</view>
+  <view class="panel section">
+    <view class="event-title">AI 设置</view>
+    <view class="event-summary">当前使用后端 AI Orchestrator。所有 AI 结果保存前都需要确认。</view>
+  </view>
+  <view class="panel section">
+    <view class="event-title">隐私设置</view>
+    <view class="event-summary">private 仅自己可见，summary_only 只共享摘要，room_visible 房间成员可见。</view>
+  </view>
+  <button class="button button-secondary" loading="{{loading}}" bindtap="generateWeekly">生成个人周报</button>
+  <view wx:if="{{report}}" class="panel section">
+    <view class="event-title">本周复盘</view>
+    <view class="event-summary">{{report.content_markdown}}</view>
+  </view>
+</view>
+

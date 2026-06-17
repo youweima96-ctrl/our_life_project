@@ -1,0 +1,31 @@
+<view class="page">
+  <view class="section">
+    <view class="title">今天发生了什么？</view>
+    <view class="subtitle">用一句话记录，AI 会先整理，你再确认。</view>
+    <textarea class="input" value="{{rawContent}}" bindinput="onInput" placeholder="例如：今天又因为见面时间和她吵架了..." />
+  </view>
+
+  <view class="section chip-row">
+    <view class="chip" data-type="conflict" bindtap="chooseScenario">冲突</view>
+    <view class="chip" data-type="communication" bindtap="chooseScenario">沟通</view>
+    <view class="chip" data-type="positive_moment" bindtap="chooseScenario">开心时刻</view>
+    <view class="chip" data-type="stress" bindtap="chooseScenario">压力</view>
+    <view class="chip" data-type="decision" bindtap="chooseScenario">决定</view>
+  </view>
+
+  <view class="section">
+    <button class="button button-primary" loading="{{loading}}" bindtap="submitRecord">AI 整理记录</button>
+  </view>
+
+  <view class="section">
+    <view class="subtitle">最近事件</view>
+    <block wx:for="{{events}}" wx:key="id">
+      <view class="event-card">
+        <view class="event-title">{{item.title}}</view>
+        <view class="event-summary">{{item.summary}}</view>
+        <view class="meta">{{item.event_type}} · {{item.visibility}}</view>
+      </view>
+    </block>
+  </view>
+</view>
+

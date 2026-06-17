@@ -1,0 +1,14 @@
+{
+  "description": "人生项目组 MVP",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "postcss": true,
+    "minified": true
+  },
+  "compileType": "miniprogram",
+  "appid": "touristappid",
+  "projectname": "our_life_mvp",
+  "miniprogramRoot": "./"
+}
+

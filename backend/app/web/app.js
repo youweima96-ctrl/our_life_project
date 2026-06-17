@@ -39,6 +39,7 @@ function switchView(viewId) {
 
   if (viewId === "timeline") loadEvents();
   if (viewId === "rooms") loadRooms();
+  if (viewId === "settings") loadLLMSettings();
 }
 
 function setScenario(scenario) {
@@ -177,6 +178,30 @@ async function createRoom() {
   }
 }
 
+async function joinRoom() {
+  const inviteCode = $("#inviteCode").value.trim();
+  const userId = $("#joinUserId").value.trim() || "demo-partner";
+  if (!inviteCode) {
+    toast("请输入邀请码");
+    return;
+  }
+
+  try {
+    await api("/rooms/join", {
+      method: "POST",
+      body: JSON.stringify({
+        user_id: userId,
+        invite_code: inviteCode
+      })
+    });
+    $("#inviteCode").value = "";
+    toast(`${userId} 已加入房间`);
+    loadRooms();
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
 async function loadRooms() {
   try {
     const rooms = await api(`/rooms?user_id=${encodeURIComponent(USER_ID)}`);
@@ -216,6 +241,43 @@ async function generateReport() {
   }
 }
 
+async function loadLLMSettings() {
+  try {
+    const settings = await api("/settings/llm");
+    $("#llmEnabled").checked = settings.enabled;
+    $("#llmBaseUrl").value = settings.base_url;
+    $("#llmModel").value = settings.model;
+    $("#llmApiKey").value = "";
+    $("#llmStatus").textContent = settings.has_api_key ? `当前模式：${settings.mode}，已配置 key` : `当前模式：${settings.mode}，未配置 key`;
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+async function saveLLMSettings() {
+  const payload = {
+    enabled: $("#llmEnabled").checked,
+    base_url: $("#llmBaseUrl").value.trim() || "https://api.openai.com/v1",
+    model: $("#llmModel").value.trim() || "gpt-4o-mini"
+  };
+  const key = $("#llmApiKey").value.trim();
+  if (key) {
+    payload.api_key = key;
+  }
+
+  try {
+    const settings = await api("/settings/llm", {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    });
+    $("#llmApiKey").value = "";
+    $("#llmStatus").textContent = settings.has_api_key ? `当前模式：${settings.mode}，已配置 key` : `当前模式：${settings.mode}，未配置 key`;
+    toast("AI 设置已保存");
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
 async function checkApi() {
   try {
     const response = await fetch("/health");
@@ -249,10 +311,13 @@ function bindEvents() {
   $("#discardButton").addEventListener("click", discardRecord);
   $("#refreshEvents").addEventListener("click", loadEvents);
   $("#createRoomButton").addEventListener("click", createRoom);
+  $("#joinRoomButton").addEventListener("click", joinRoom);
   $("#generateReportButton").addEventListener("click", generateReport);
+  $("#saveLLMButton").addEventListener("click", saveLLMSettings);
 }
 
 bindEvents();
 checkApi();
 loadEvents();
 loadRooms();
+loadLLMSettings();

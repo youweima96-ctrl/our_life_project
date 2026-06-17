@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import conflicts, events, reports, rooms
+from app.api import conflicts, events, reports, rooms, settings as settings_api
 from app.core.config import get_settings
 
 
@@ -25,6 +25,7 @@ app.include_router(events.router, prefix=settings.api_prefix)
 app.include_router(rooms.router, prefix=settings.api_prefix)
 app.include_router(conflicts.router, prefix=settings.api_prefix)
 app.include_router(reports.router, prefix=settings.api_prefix)
+app.include_router(settings_api.router, prefix=settings.api_prefix)
 
 app.mount("/web", StaticFiles(directory=web_dir), name="web")
 

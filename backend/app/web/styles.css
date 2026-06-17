@@ -251,6 +251,18 @@ label {
   gap: 16px;
 }
 
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.checkbox-line input {
+  width: 18px;
+  height: 18px;
+}
+
 .tag-list,
 .question-list {
   display: flex;
@@ -339,7 +351,7 @@ label {
   }
 
   .nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     margin-top: 18px;
   }
 

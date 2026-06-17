@@ -18,6 +18,7 @@
           <button class="nav-item" data-view="timeline">时间线</button>
           <button class="nav-item" data-view="rooms">双人房间</button>
           <button class="nav-item" data-view="reports">周报</button>
+          <button class="nav-item" data-view="settings">AI 设置</button>
         </nav>
         <div class="status">
           <span id="apiStatusDot" class="dot"></span>
@@ -92,6 +93,14 @@
             <input id="roomName" class="field" placeholder="例如：我们的关系项目组" />
             <button id="createRoomButton" class="primary">创建房间</button>
           </div>
+          <div class="panel">
+            <div class="panel-title">用邀请码加入</div>
+            <label>邀请码</label>
+            <input id="inviteCode" class="field" placeholder="输入对方房间的邀请码" />
+            <label>加入用户 ID</label>
+            <input id="joinUserId" class="field" value="demo-partner" />
+            <button id="joinRoomButton" class="secondary">加入房间</button>
+          </div>
           <div id="roomList" class="list"></div>
         </section>
 
@@ -104,6 +113,32 @@
             <button id="generateReportButton" class="primary">生成个人周报</button>
           </div>
           <article id="reportPanel" class="report panel">暂无周报</article>
+        </section>
+
+        <section id="settings" class="view">
+          <div class="header-row">
+            <div>
+              <h1>AI 设置</h1>
+              <p>本地开发可在这里填入 LLM API key。key 只发送到后端并存于内存，不写入仓库；生产环境请使用后端 Secret。</p>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">LLM Provider</div>
+            <label class="checkbox-line">
+              <input id="llmEnabled" type="checkbox" />
+              启用真实 LLM
+            </label>
+            <label>Base URL</label>
+            <input id="llmBaseUrl" class="field" placeholder="https://api.openai.com/v1" />
+            <label>Model</label>
+            <input id="llmModel" class="field" placeholder="gpt-4o-mini" />
+            <label>API Key</label>
+            <input id="llmApiKey" class="field" type="password" placeholder="只在本地后端内存中使用，不会保存到仓库" />
+            <div class="action-row">
+              <button id="saveLLMButton" class="primary">保存 AI 设置</button>
+              <span id="llmStatus" class="hint">未加载</span>
+            </div>
+          </div>
         </section>
       </main>
     </div>

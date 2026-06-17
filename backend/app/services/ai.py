@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from typing import Optional
+
+import httpx
 
 from app.core.config import get_settings
 from app.models.enums import EventType, Visibility
 from app.schemas.conflicts import AIConflictReview
 from app.schemas.events import AIEventExtraction, SafetyFlags
+from app.services.llm_settings import runtime_llm_settings
 
 
 CONFLICT_WORDS = ("吵", "争执", "冲突", "生气", "冷战", "不主动", "委屈")
@@ -29,6 +33,14 @@ class AIService:
         self.settings = get_settings()
 
     def extract_event(self, raw_content: str, scenario: Optional[EventType] = None) -> AIEventExtraction:
+        if self._llm_enabled():
+            try:
+                return self._extract_event_llm(raw_content, scenario)
+            except Exception:
+                pass
+        return self._extract_event_heuristic(raw_content, scenario)
+
+    def _extract_event_heuristic(self, raw_content: str, scenario: Optional[EventType] = None) -> AIEventExtraction:
         event_type = scenario or self._classify(raw_content)
         visibility = self._suggest_visibility(event_type)
         safety_flags = self._safety_flags(raw_content)
@@ -50,6 +62,11 @@ class AIService:
         )
 
     def conflict_review(self, user_view: str, partner_view: Optional[str] = None) -> AIConflictReview:
+        if self._llm_enabled():
+            try:
+                return self._conflict_review_llm(user_view, partner_view)
+            except Exception:
+                pass
         shared_facts = [self._summary(user_view, EventType.conflict)]
         if partner_view:
             shared_facts.append(self._summary(partner_view, EventType.conflict))
@@ -69,6 +86,11 @@ class AIService:
         )
 
     def weekly_report(self, event_summaries: list[str], room: bool = False) -> str:
+        if self._llm_enabled():
+            try:
+                return self._weekly_report_llm(event_summaries, room)
+            except Exception:
+                pass
         title = "本周共同复盘" if room else "本周个人复盘"
         if not event_summaries:
             return f"# {title}\n\n本周记录不足，暂时无法生成有价值的复盘。"
@@ -84,6 +106,92 @@ class AIService:
             "2. 将模糊期待改成一个具体约定。\n"
             "3. 保留原始记录，避免只依赖事后记忆。"
         )
+
+    def _llm_enabled(self) -> bool:
+        return runtime_llm_settings.enabled and bool(runtime_llm_settings.api_key)
+
+    def _extract_event_llm(self, raw_content: str, scenario: Optional[EventType]) -> AIEventExtraction:
+        schema = AIEventExtraction.model_json_schema()
+        scenario_hint = scenario.value if scenario else "auto"
+        content = self._chat_json(
+            system=(
+                "你是一个长期人生记录整理助手。请将用户输入的一段生活记录整理成结构化事件。"
+                "只基于用户输入，不编造事实；不判断谁对谁错；不做医疗、心理、法律、投资结论。"
+                "如果是关系冲突，请区分事实、情绪、需求和待确认问题。"
+                "输出必须是严格 JSON，字段必须符合给定 schema。"
+            ),
+            user=(
+                f"Schema:\n{json.dumps(schema, ensure_ascii=False)}\n\n"
+                f"场景提示：{scenario_hint}\n"
+                f"用户输入：\n{raw_content}"
+            ),
+        )
+        return AIEventExtraction.model_validate(content)
+
+    def _conflict_review_llm(self, user_view: str, partner_view: Optional[str]) -> AIConflictReview:
+        schema = AIConflictReview.model_json_schema()
+        content = self._chat_json(
+            system=(
+                "你是一个中立的关系复盘整理助手。请基于双方授权共享的信息生成冲突复盘。"
+                "不站队，不判定谁对谁错；不建议分手、冷战或惩罚对方；使用“可能”“需要确认”等措辞。"
+                "输出必须是严格 JSON，字段必须符合给定 schema。"
+            ),
+            user=(
+                f"Schema:\n{json.dumps(schema, ensure_ascii=False)}\n\n"
+                f"发起者视角：\n{user_view}\n\n"
+                f"对方视角：\n{partner_view or '未提供'}"
+            ),
+        )
+        return AIConflictReview.model_validate(content)
+
+    def _weekly_report_llm(self, event_summaries: list[str], room: bool) -> str:
+        title = "房间周报" if room else "个人周报"
+        if not event_summaries:
+            return f"# {title}\n\n本周记录不足，暂时无法生成有价值的复盘。"
+        response = self._chat_text(
+            system=(
+                "你是一个长期人生复盘助手。只总结用户提供的事件，不编造没有记录的内容。"
+                "提炼高频主题、明显变化和未解决问题，最多给出 3 条下周行动建议。"
+            ),
+            user=f"请生成一份简洁的{title}，使用 Markdown。\n\n事件列表：\n" + "\n".join(f"- {item}" for item in event_summaries),
+        )
+        return response.strip()
+
+    def _chat_json(self, system: str, user: str) -> dict:
+        text = self._chat_text(system, user, json_mode=True)
+        return self._parse_json(text)
+
+    def _chat_text(self, system: str, user: str, json_mode: bool = False) -> str:
+        payload = {
+            "model": runtime_llm_settings.model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            "temperature": 0.2,
+        }
+        if json_mode:
+            payload["response_format"] = {"type": "json_object"}
+
+        with httpx.Client(timeout=45) as client:
+            response = client.post(
+                f"{runtime_llm_settings.base_url}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {runtime_llm_settings.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
+            response.raise_for_status()
+            data = response.json()
+        return data["choices"][0]["message"]["content"]
+
+    def _parse_json(self, text: str) -> dict:
+        clean = text.strip()
+        if clean.startswith("```"):
+            clean = re.sub(r"^```(?:json)?", "", clean).strip()
+            clean = re.sub(r"```$", "", clean).strip()
+        return json.loads(clean)
 
     def _classify(self, text: str) -> EventType:
         if self._has_any(text, CONFLICT_WORDS):

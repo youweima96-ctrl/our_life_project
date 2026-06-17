@@ -21,6 +21,13 @@ uvicorn app.main:app --reload --port 8000
 
 默认使用内存数据，便于快速验证交互。配置 `LLM_API_KEY` 后可替换 `app/services/ai.py` 中的启发式实现为真实模型调用。
 
+真实 LLM 有两种本地配置方式：
+
+- 在浏览器版 MVP 的“AI 设置”页填写 `Base URL`、`Model`、`API Key`。
+- 在后端环境变量中配置 `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`。
+
+当前使用 OpenAI-compatible Chat Completions 协议，默认地址是 `https://api.openai.com/v1`。没有配置 key 或调用失败时，后端会自动回退到本地启发式整理，保证演示流程不中断。
+
 浏览器版 MVP：
 
 ```text
@@ -39,6 +46,7 @@ http://127.0.0.1:8000/docs
 - 微信小程序前端只保存后端 API 地址，不保存任何模型、数据库或第三方服务密钥。
 - `.env` 和 `.env.*` 已加入 `.gitignore`，提交前不要移除该规则。
 - 后端负责代理所有 AI 调用，前端不得直连 LLM API。
+- 浏览器设置页仅用于本地开发：key 发送给本机后端并存于内存，刷新后端进程会丢失；生产环境应改用部署平台 Secret。
 
 ## 小程序配置
 

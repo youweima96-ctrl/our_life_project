@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>人生项目组 MVP</title>
+    <link rel="stylesheet" href="/web/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div>
+          <div class="brand">人生项目组</div>
+          <div class="tagline">AI 快速记录与复盘 MVP</div>
+        </div>
+        <nav class="nav">
+          <button class="nav-item active" data-view="home">首页记录</button>
+          <button class="nav-item" data-view="timeline">时间线</button>
+          <button class="nav-item" data-view="rooms">双人房间</button>
+          <button class="nav-item" data-view="reports">周报</button>
+        </nav>
+        <div class="status">
+          <span id="apiStatusDot" class="dot"></span>
+          <span id="apiStatus">检查后端中</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <section id="home" class="view active">
+          <div class="header-row">
+            <div>
+              <h1>今天发生了什么？</h1>
+              <p>输入一段真实事件，AI 会先整理，你再确认保存。</p>
+            </div>
+            <a class="docs-link" href="/docs" target="_blank">API 文档</a>
+          </div>
+
+          <div class="quick-row" id="scenarioRow">
+            <button data-scenario="conflict">冲突</button>
+            <button data-scenario="communication">沟通</button>
+            <button data-scenario="positive_moment">开心时刻</button>
+            <button data-scenario="stress">压力</button>
+            <button data-scenario="decision">决定</button>
+            <button data-scenario="">随便记</button>
+          </div>
+
+          <textarea id="rawContent" class="text-input" placeholder="例如：今天又因为见面时间和她吵架了。她觉得我一直不主动规划，我觉得最近夜班太累。"></textarea>
+          <div class="action-row">
+            <button id="extractButton" class="primary">AI 整理记录</button>
+            <span id="selectedScenario" class="hint">未选择场景</span>
+          </div>
+
+          <section id="confirmPanel" class="panel hidden">
+            <div class="panel-title">AI 整理结果</div>
+            <label>标题</label>
+            <input id="confirmTitle" class="field" />
+            <label>摘要</label>
+            <textarea id="confirmSummary" class="field textarea-small"></textarea>
+            <div class="grid-2">
+              <label>类型<input id="confirmType" class="field" /></label>
+              <label>权限<input id="confirmVisibility" class="field" /></label>
+            </div>
+            <div id="tags" class="tag-list"></div>
+            <div id="questions" class="question-list"></div>
+            <div class="action-row">
+              <button id="confirmButton" class="primary">确认保存</button>
+              <button id="discardButton" class="secondary">丢弃</button>
+            </div>
+          </section>
+        </section>
+
+        <section id="timeline" class="view">
+          <div class="header-row">
+            <div>
+              <h1>事件时间线</h1>
+              <p>这里只显示已经确认保存的记录。</p>
+            </div>
+            <button id="refreshEvents" class="secondary">刷新</button>
+          </div>
+          <div id="eventList" class="list"></div>
+        </section>
+
+        <section id="rooms" class="view">
+          <div class="header-row">
+            <div>
+              <h1>双人房间</h1>
+              <p>创建房间后，可用于共享事件、冲突复盘和共同决定。</p>
+            </div>
+          </div>
+          <div class="panel">
+            <label>房间名称</label>
+            <input id="roomName" class="field" placeholder="例如：我们的关系项目组" />
+            <button id="createRoomButton" class="primary">创建房间</button>
+          </div>
+          <div id="roomList" class="list"></div>
+        </section>
+
+        <section id="reports" class="view">
+          <div class="header-row">
+            <div>
+              <h1>AI 周报</h1>
+              <p>基于已确认事件生成本周复盘。</p>
+            </div>
+            <button id="generateReportButton" class="primary">生成个人周报</button>
+          </div>
+          <article id="reportPanel" class="report panel">暂无周报</article>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="/web/app.js"></script>
+  </body>
+</html>

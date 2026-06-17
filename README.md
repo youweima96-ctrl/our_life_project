@@ -21,6 +21,18 @@ uvicorn app.main:app --reload --port 8000
 
 默认使用内存数据，便于快速验证交互。配置 `LLM_API_KEY` 后可替换 `app/services/ai.py` 中的启发式实现为真实模型调用。
 
+浏览器版 MVP：
+
+```text
+http://127.0.0.1:8000/
+```
+
+API 文档：
+
+```text
+http://127.0.0.1:8000/docs
+```
+
 安全约定：
 
 - `LLM_API_KEY`、数据库密码、对象存储密钥只允许放在后端环境变量或部署平台 Secret 中。
